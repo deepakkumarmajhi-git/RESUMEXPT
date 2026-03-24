@@ -1,0 +1,15 @@
+Resume analysis failed Error [OpenAIServiceError]: OpenAI API quota is currently unavailable. Try again later or use a different key.
+    at normalizeOpenAIError (services\openai.service.ts:87:12)
+    at generateJsonContent (services\openai.service.ts:136:11)
+    at async analyzeResume (services\openai.service.ts:172:24)
+    at async POST (app\api\resumes\[id]\analyze\route.ts:34:28)
+  85 |
+  86 |   if (status === 429 || /quota|rate limit|billing/i.test(message)) {
+> 87 |     return new OpenAIServiceError(
+     |            ^
+  88 |       "OpenAI API quota is currently unavailable. Try again later or use a different key.",
+  89 |       503,
+  90 |     ); {
+  statusCode: 503
+}
+^C^C

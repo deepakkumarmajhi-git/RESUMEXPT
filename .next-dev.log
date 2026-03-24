@@ -1,0 +1,19 @@
+
+> resumexpt@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.56.1:3000
+- Environments: .env.local
+✓ Ready in 1269ms
+Creating turbopack project { dir: 'D:\\resume_checker\\resumexpt', testMode: true }
+- Experiments (use with caution):
+  ⨯ turbopackFileSystemCacheForDev
+
+○ Compiling /dashboard ...
+ GET /dashboard 200 in 18.0s (next.js: 10.2s, proxy.ts: 711ms, application-code: 7.1s)
+ GET /api/auth/session 200 in 5.0s (next.js: 4.9s, application-code: 123ms)
+ GET /upload 200 in 1958ms (next.js: 1820ms, proxy.ts: 18ms, application-code: 120ms)
+ POST /api/resumes 201 in 5.7s (next.js: 1448ms, application-code: 4.2s)
+ POST /api/resumes/69c2db595a436a9223143ea4/analyze 503 in 7.9s (next.js: 2.6s, application-code: 5.2s)
