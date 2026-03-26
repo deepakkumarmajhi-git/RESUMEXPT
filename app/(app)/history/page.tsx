@@ -8,11 +8,11 @@ export default async function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
           History
         </p>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight">
+        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
           Review your resume and interview archive.
         </h1>
         <p className="mt-3 text-base leading-8 text-muted-foreground">

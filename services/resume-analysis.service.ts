@@ -461,7 +461,7 @@ export async function analyzeResume(
 ): Promise<ResumeAnalysisServiceResult> {
   const preparedResumeText = prepareResumeTextForAnalysis(resumeText);
   const preparedJobRole = jobRole.trim();
-  const canUseSarvam = Boolean(env.SARVAM_API_KEY && env.SARVAM_BASE_URL);
+  const canUseSarvam = Boolean(env.SARVAM_API_KEY);
   const canUseOpenAIFallback = Boolean(
     env.OPENAI_FALLBACK_ENABLED && env.OPENAI_API_KEY,
   );
@@ -479,7 +479,7 @@ export async function analyzeResume(
 
   if (!env.GEMINI_API_KEY && !canUseSarvam && !canUseOpenAIFallback) {
     throw new ResumeAnalysisServiceError(
-      "No AI provider is configured. Set GEMINI_API_KEY, keep SARVAM_API_KEY configured, or enable OPENAI_FALLBACK_ENABLED with a valid OPENAI_API_KEY.",
+      "No AI provider is configured. Set GEMINI_API_KEY, set SARVAM_API_KEY, or enable OPENAI_FALLBACK_ENABLED with a valid OPENAI_API_KEY.",
       503,
     );
   }
@@ -495,7 +495,7 @@ export async function analyzeResume(
         error instanceof ResumeAnalysisServiceError
           ? error
           : new ResumeAnalysisServiceError("Gemini analysis failed.", 502);
-      console.warn("Gemini analysis failed, attempting OpenAI fallback.", error);
+      console.warn("Gemini analysis failed, attempting next fallback.", error);
     }
   }
 

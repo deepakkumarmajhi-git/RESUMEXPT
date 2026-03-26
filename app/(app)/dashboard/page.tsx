@@ -15,15 +15,16 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <Card className="overflow-hidden">
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
               Welcome back
             </p>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight">
+            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
               {session?.user?.name}, keep building interview-ready momentum.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-muted-foreground">
-              Upload a fresh resume, compare ATS fit for your next role, and run a tailored mock interview from the same dashboard.
+              Upload a fresh resume, compare ATS fit for your next role, and
+              run a tailored mock interview from the same dashboard.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild>

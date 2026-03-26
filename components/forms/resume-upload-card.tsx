@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
-import { UploadCloud, Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { FileText, Loader2, Sparkles, UploadCloud } from "lucide-react";
+import { startTransition, useState } from "react";
 import { toast } from "sonner";
 import { useFileUpload } from "@/hooks/use-file-upload";
 import {
@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/utils/cn";
+import { MAX_RESUME_FILE_SIZE } from "@/utils/file";
 
 export function ResumeUploadCard() {
   const router = useRouter();
@@ -34,16 +36,25 @@ export function ResumeUploadCard() {
     reset,
   } = useFileUpload();
   const [targetRole, setTargetRole] = useState("");
+  const maxResumeSizeMb = Math.round(MAX_RESUME_FILE_SIZE / 1024 / 1024);
+
+  const openAnalysisPage = (resumeId: string) => {
+    startTransition(() => {
+      router.push(`/analysis/${resumeId}`);
+      router.refresh();
+    });
+  };
 
   const dropzone = useDropzone({
     multiple: false,
+    maxSize: MAX_RESUME_FILE_SIZE,
     accept: {
       "application/pdf": [".pdf"],
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
         [".docx"],
     },
-    onDrop: (acceptedFiles) => {
-      onFileSelect(acceptedFiles[0] ?? null);
+    onDrop: (acceptedFiles, fileRejections) => {
+      onFileSelect(acceptedFiles[0] ?? fileRejections[0]?.file ?? null);
     },
   });
 
@@ -61,6 +72,7 @@ export function ResumeUploadCard() {
     }
 
     setIsUploading(true);
+    let uploadedResumeId: string | null = null;
 
     try {
       const formData = new FormData();
@@ -84,8 +96,10 @@ export function ResumeUploadCard() {
         );
       }
 
+      uploadedResumeId = uploadResult.payload.data.id;
+
       const analyzeResponse = await fetch(
-        `/api/resumes/${uploadResult.payload.data.id}/analyze`,
+        `/api/resumes/${uploadedResumeId}/analyze`,
         {
           method: "POST",
           headers: {
@@ -111,10 +125,18 @@ export function ResumeUploadCard() {
 
       toast.success("Resume uploaded and analyzed successfully.");
       reset();
-      router.push(`/analysis/${uploadResult.payload.data.id}`);
-      router.refresh();
+      setTargetRole("");
+      openAnalysisPage(uploadedResumeId);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Upload failed.");
+      const message =
+        error instanceof Error ? error.message : "Upload failed.";
+
+      if (uploadedResumeId) {
+        toast.error(`Resume uploaded, but analysis failed: ${message}`);
+        openAnalysisPage(uploadedResumeId);
+      } else {
+        toast.error(message);
+      }
     } finally {
       setIsUploading(false);
     }
@@ -122,27 +144,54 @@ export function ResumeUploadCard() {
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader>
-        <CardTitle className="text-2xl">Upload a new resume</CardTitle>
+      <CardHeader className="p-5 sm:p-6">
+        <CardTitle className="text-xl sm:text-2xl">
+          Upload a new resume
+        </CardTitle>
         <CardDescription>
-          Drag in a PDF or DOCX file, then run an ATS analysis tailored to your target role.
+          Drag in a PDF or DOCX file, then run an ATS analysis tailored to your
+          target role.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6">
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div
             {...dropzone.getRootProps()}
-            className="rounded-[1.8rem] border border-dashed border-border bg-secondary/35 p-8 text-center transition hover:border-primary hover:bg-secondary/60"
+            className={cn(
+              "rounded-[1.6rem] border border-dashed border-border bg-secondary/35 p-5 text-center transition hover:border-primary hover:bg-secondary/60 sm:rounded-[1.8rem] sm:p-8",
+              dropzone.isDragActive && "border-primary bg-secondary/60",
+            )}
           >
             <input {...dropzone.getInputProps()} />
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary sm:h-14 sm:w-14">
               <UploadCloud className="h-6 w-6" />
             </div>
-            <p className="mt-4 text-base font-semibold">Drop resume here</p>
-            <p className="mt-2 text-sm text-muted-foreground">{fileLabel}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              PDF or DOCX, max 5MB
+            <p className="mt-4 text-base font-semibold">
+              {dropzone.isDragActive ? "Drop resume to upload" : "Drop resume here"}
             </p>
+            <p className="mt-2 break-words text-sm text-muted-foreground">
+              {fileLabel}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              PDF or DOCX, max {maxResumeSizeMb}MB
+            </p>
+            <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={(clickEvent) => {
+                  clickEvent.preventDefault();
+                  clickEvent.stopPropagation();
+                  dropzone.open();
+                }}
+              >
+                <FileText className="h-4 w-4" />
+                Browse files
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Mobile and desktop uploads are supported.
+              </p>
+            </div>
           </div>
 
           {error ? <p className="text-sm text-destructive">{error}</p> : null}

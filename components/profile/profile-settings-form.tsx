@@ -197,7 +197,7 @@ export function ProfileSettingsForm({
           </div>
 
           <div className="md:col-span-2">
-            <Button disabled={isSaving} type="submit">
+            <Button className="w-full sm:w-auto" disabled={isSaving} type="submit">
               {isSaving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (

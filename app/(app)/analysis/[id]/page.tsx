@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { RetryAnalysisButton } from "@/components/forms/retry-analysis-button";
 import {
   Card,
   CardContent,
@@ -83,11 +84,13 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="max-w-4xl">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
           Resume analysis
         </p>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight">{resume.fileName}</h1>
+        <h1 className="mt-3 break-words text-3xl font-bold tracking-tight sm:text-4xl">
+          {resume.fileName}
+        </h1>
         <p className="mt-3 text-base leading-8 text-muted-foreground">
           Review ATS fit, strengths, weak points, and role-aligned suggestions.
         </p>
@@ -104,7 +107,9 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="rounded-[1.8rem] bg-secondary/35 p-6">
-                <p className="text-5xl font-bold">{analysisRecord.atsScore}/100</p>
+                <p className="text-4xl font-bold sm:text-5xl">
+                  {analysisRecord.atsScore}/100
+                </p>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">
                   {analysisRecord.summary}
                 </p>
@@ -116,7 +121,9 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     Keyword match
                   </p>
-                  <p className="mt-3 text-3xl font-semibold">{keywordsMatch}%</p>
+                  <p className="mt-3 text-2xl font-semibold sm:text-3xl">
+                    {keywordsMatch}%
+                  </p>
                   <Progress
                     className="mt-4"
                     indicatorClassName="bg-linear-to-r from-amber-500 to-yellow-500"
@@ -128,9 +135,12 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     Missing skills
                   </p>
-                  <p className="mt-3 text-3xl font-semibold">{missingSkills.length}</p>
+                  <p className="mt-3 text-2xl font-semibold sm:text-3xl">
+                    {missingSkills.length}
+                  </p>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Skills or keywords the model expects for this role but could not find clearly in the resume.
+                    Skills or keywords the model expects for this role but could
+                    not find clearly in the resume.
                   </p>
                 </div>
               </div>
@@ -195,7 +205,7 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
               <CardHeader>
                 <CardTitle>Suggestions</CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-3 md:grid-cols-2">
+              <CardContent className="grid gap-3 sm:grid-cols-2">
                 {suggestions.map((item) => (
                   <div
                     key={item}
@@ -210,8 +220,19 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
         </div>
       ) : (
         <Card>
-          <CardContent className="p-8 text-sm text-muted-foreground">
-            This resume has not been analyzed yet.
+          <CardContent className="space-y-4 p-6 text-sm text-muted-foreground sm:p-8">
+            <p>This resume has not been analyzed yet.</p>
+            <p>
+              {resume.targetRole
+                ? `Saved target role: ${resume.targetRole}`
+                : "No target role is saved for this resume yet."}
+            </p>
+            {resume.targetRole ? (
+              <RetryAnalysisButton
+                resumeId={resume._id.toString()}
+                targetRole={resume.targetRole}
+              />
+            ) : null}
           </CardContent>
         </Card>
       )}

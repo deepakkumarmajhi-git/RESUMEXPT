@@ -48,15 +48,16 @@ export default async function InterviewsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
           Interview generator
         </p>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight">
+        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
           Build the right question set before the real conversation.
         </h1>
         <p className="mt-3 text-base leading-8 text-muted-foreground">
-          Generate technical, HR, and coding questions, then launch a text or voice mock interview from any saved set.
+          Generate technical, HR, and coding questions, then launch a text or
+          voice mock interview from any saved set.
         </p>
       </div>
 
@@ -83,7 +84,8 @@ export default async function InterviewsPage() {
                   <Badge variant="outline">{set.difficulty}</Badge>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {set.technicalQuestions.length} technical - {set.hrQuestions.length} HR - {set.codingQuestions.length} coding
+                  {set.technicalQuestions.length} technical -{" "}
+                  {set.hrQuestions.length} HR - {set.codingQuestions.length} coding
                 </p>
               </Link>
             ))

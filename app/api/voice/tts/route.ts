@@ -1,7 +1,10 @@
 import { errorResponse, successResponse } from "@/lib/api";
 import { requireUserSession } from "@/lib/auth/session";
 import { voiceSynthesisSchema } from "@/lib/validations";
-import { synthesizeSpeech } from "@/services/sarvam.service";
+import {
+  SarvamServiceError,
+  synthesizeSpeech,
+} from "@/services/sarvam.service";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -28,6 +31,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Text-to-speech failed", error);
+    if (error instanceof SarvamServiceError) {
+      return errorResponse(error.message, error.statusCode);
+    }
     return errorResponse("Unable to synthesize audio right now.", 500);
   }
 }

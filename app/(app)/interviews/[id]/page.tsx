@@ -35,8 +35,8 @@ export default async function InterviewDetailPage({
     .lean();
 
   return (
-    <div className="flex flex-col gap-6 lg:h-[calc(100vh-5.5rem)]">
-      <div className="shrink-0">
+    <div className="flex min-w-0 flex-col gap-6 lg:h-[calc(100vh-5.5rem)]">
+      <div className="min-w-0 shrink-0">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
             Interview set
@@ -50,7 +50,7 @@ export default async function InterviewDetailPage({
             seed prompts
           </Badge>
         </div>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight">
+        <h1 className="mt-3 break-words text-3xl font-bold tracking-tight sm:text-4xl">
           {interviewSet.role}
         </h1>
       </div>

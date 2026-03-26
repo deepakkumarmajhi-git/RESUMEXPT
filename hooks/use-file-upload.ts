@@ -10,7 +10,7 @@ export function useFileUpload() {
 
   const fileLabel = useMemo(() => {
     if (!file) return "Choose a PDF or DOCX resume";
-    return `${file.name} • ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+    return `${file.name} - ${(file.size / 1024 / 1024).toFixed(2)} MB`;
   }, [file]);
 
   const onFileSelect = (nextFile: File | null) => {

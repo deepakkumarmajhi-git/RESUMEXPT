@@ -27,7 +27,7 @@ type RecentActivityProps = {
 export function RecentActivity({ items }: RecentActivityProps) {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <CardTitle>Recent activity</CardTitle>
           <p className="text-sm text-muted-foreground">
@@ -50,7 +50,7 @@ export function RecentActivity({ items }: RecentActivityProps) {
             return (
               <div
                 key={`${item.type}-${item.id}`}
-                className="flex items-start gap-4 rounded-[1.4rem] border border-border/60 bg-card/60 p-4"
+                className="flex flex-col gap-4 rounded-[1.4rem] border border-border/60 bg-card/60 p-4 sm:flex-row sm:items-start"
               >
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
                   <Icon className="h-5 w-5" />
@@ -64,7 +64,7 @@ export function RecentActivity({ items }: RecentActivityProps) {
                     {item.subtitle}
                   </p>
                 </div>
-                <p className="shrink-0 text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground sm:shrink-0">
                   {formatRelativeDate(item.createdAt)}
                 </p>
               </div>

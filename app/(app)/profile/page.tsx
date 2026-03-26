@@ -8,15 +8,16 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
           Profile
         </p>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight">
+        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
           Personal settings and coaching defaults.
         </h1>
         <p className="mt-3 text-base leading-8 text-muted-foreground">
-          Keep your profile, target role, voice mode, and interview preferences up to date.
+          Keep your profile, target role, voice mode, and interview preferences
+          up to date.
         </p>
       </div>
 

@@ -4,13 +4,60 @@ export const ALLOWED_RESUME_TYPES = [
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
+const GENERIC_BINARY_RESUME_TYPES = new Set([
+  "",
+  "application/octet-stream",
+  "application/zip",
+  "application/x-zip-compressed",
+]);
 
-export function isAllowedResumeType(type: string) {
-  return ALLOWED_RESUME_TYPES.includes(type);
+type ResumeFileKind = "pdf" | "docx";
+
+function getResumeExtension(fileName: string) {
+  const normalizedFileName = fileName.trim().toLowerCase();
+  const lastDotIndex = normalizedFileName.lastIndexOf(".");
+
+  if (lastDotIndex < 0) {
+    return "";
+  }
+
+  return normalizedFileName.slice(lastDotIndex + 1);
 }
 
-export function validateResumeFile(file: File) {
-  if (!isAllowedResumeType(file.type)) {
+export function getResumeFileKind(file: { name?: string; type?: string }): ResumeFileKind | null {
+  const normalizedType = file.type?.trim().toLowerCase() ?? "";
+  const extension = getResumeExtension(file.name ?? "");
+
+  if (normalizedType === "application/pdf") {
+    return "pdf";
+  }
+
+  if (
+    normalizedType ===
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ) {
+    return "docx";
+  }
+
+  if (extension === "pdf" && GENERIC_BINARY_RESUME_TYPES.has(normalizedType)) {
+    return "pdf";
+  }
+
+  if (extension === "docx" && GENERIC_BINARY_RESUME_TYPES.has(normalizedType)) {
+    return "docx";
+  }
+
+  return null;
+}
+
+export function isAllowedResumeType(type: string, fileName = "") {
+  return getResumeFileKind({ name: fileName, type }) !== null;
+}
+
+export function validateResumeFile(
+  file: Pick<File, "name" | "size" | "type">,
+) {
+  if (!isAllowedResumeType(file.type, file.name)) {
     return "Please upload a PDF or DOCX file.";
   }
 

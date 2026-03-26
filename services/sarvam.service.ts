@@ -1,13 +1,6 @@
 import axios from "axios";
 import { env } from "@/lib/env";
 
-const sarvamClient = axios.create({
-  baseURL: env.SARVAM_BASE_URL,
-  headers: {
-    "api-subscription-key": env.SARVAM_API_KEY,
-  },
-});
-
 type SarvamChatMessage = {
   role: "system" | "user" | "assistant";
   content: string;
@@ -32,6 +25,28 @@ export class SarvamServiceError extends Error {
     this.name = "SarvamServiceError";
     this.statusCode = statusCode;
   }
+}
+
+let sarvamClient: ReturnType<typeof axios.create> | null = null;
+
+function getSarvamClient() {
+  if (!env.SARVAM_API_KEY) {
+    throw new SarvamServiceError(
+      "Sarvam is not configured. Set SARVAM_API_KEY to enable voice features and Sarvam fallbacks.",
+      503,
+    );
+  }
+
+  if (!sarvamClient) {
+    sarvamClient = axios.create({
+      baseURL: env.SARVAM_BASE_URL,
+      headers: {
+        "api-subscription-key": env.SARVAM_API_KEY,
+      },
+    });
+  }
+
+  return sarvamClient;
 }
 
 function normalizeSarvamError(error: unknown) {
@@ -80,8 +95,10 @@ export async function completeChatWithSarvam(params: {
   temperature?: number;
   reasoningEffort?: "low" | "medium" | "high";
 }) {
+  const client = getSarvamClient();
+
   try {
-    const response = await sarvamClient.post<SarvamChatCompletionPayload>(
+    const response = await client.post<SarvamChatCompletionPayload>(
       "/v1/chat/completions",
       {
         messages: params.messages,
@@ -111,12 +128,13 @@ export async function completeChatWithSarvam(params: {
 }
 
 export async function transcribeAudio(file: File, languageCode?: string) {
+  const client = getSarvamClient();
   const formData = new FormData();
   formData.append("file", file);
   formData.append("model", "saarika:v2.5");
   formData.append("language_code", languageCode || env.SARVAM_TARGET_LANGUAGE_CODE);
 
-  const response = await sarvamClient.post("/speech-to-text", formData, {
+  const response = await client.post("/speech-to-text", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -134,7 +152,8 @@ export async function synthesizeSpeech(params: {
   languageCode?: string;
   speaker?: string;
 }) {
-  const response = await sarvamClient.post("/text-to-speech", {
+  const client = getSarvamClient();
+  const response = await client.post("/text-to-speech", {
     text: params.text,
     target_language_code:
       params.languageCode || env.SARVAM_TARGET_LANGUAGE_CODE,

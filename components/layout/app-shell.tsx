@@ -68,10 +68,10 @@ export function AppShell({ children, user }: AppShellProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen overflow-x-hidden bg-background">
       <aside
         className={cn(
-          "hide-scrollbar fixed inset-y-0 left-0 z-40 flex w-[280px] flex-col overflow-y-auto border-r border-border/60 bg-[color:color-mix(in_srgb,var(--card)_92%,white)]/95 px-6 py-6 backdrop-blur-xl transition-[transform,width,padding] duration-300 ease-out",
+          "hide-scrollbar fixed inset-y-0 left-0 z-40 flex w-[min(85vw,280px)] max-w-[280px] flex-col overflow-y-auto border-r border-border/60 bg-[color:color-mix(in_srgb,var(--card)_92%,white)]/95 px-5 py-5 backdrop-blur-xl transition-[transform,width,padding] duration-300 ease-out sm:px-6 sm:py-6",
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
           isSidebarCollapsed && "lg:w-24 lg:px-3 lg:py-5",
         )}
@@ -221,8 +221,8 @@ export function AppShell({ children, user }: AppShellProps) {
           isSidebarCollapsed ? "lg:pl-24" : "lg:pl-[280px]",
         )}
       >
-        <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 px-4 py-4 backdrop-blur-xl lg:hidden">
-          <div className="flex items-center justify-between">
+        <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 px-4 py-4 backdrop-blur-xl sm:px-6 lg:hidden">
+          <div className="flex items-center justify-between gap-3">
             <Button
               variant="outline"
               size="icon"
@@ -231,10 +231,20 @@ export function AppShell({ children, user }: AppShellProps) {
             >
               <Menu className="h-5 w-5" />
             </Button>
+            <div className="min-w-0 text-right">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+                ResumeXpt
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {user.name || user.email || "Workspace"}
+              </p>
+            </div>
           </div>
         </header>
 
-        <main className="px-4 py-6 lg:px-8 lg:py-8">{children}</main>
+        <main className="w-full px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+          {children}
+        </main>
       </div>
     </div>
   );

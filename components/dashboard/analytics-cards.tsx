@@ -29,15 +29,17 @@ export function AnalyticsCards({ stats }: AnalyticsCardsProps) {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {items.map((item) => {
         const Icon = item.icon;
         return (
           <Card key={item.label} className="overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between gap-4 pb-3">
+            <CardHeader className="flex flex-col items-start justify-between gap-4 pb-3 sm:flex-row sm:items-center">
               <div>
                 <p className="text-sm text-muted-foreground">{item.label}</p>
-                <CardTitle className="mt-2 text-3xl">{item.value}</CardTitle>
+                <CardTitle className="mt-2 text-2xl sm:text-3xl">
+                  {item.value}
+                </CardTitle>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Icon className="h-5 w-5" />

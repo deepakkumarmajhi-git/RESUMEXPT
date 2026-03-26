@@ -177,12 +177,10 @@ Deploy to Vercel with the same environment variables from `.env.local` configure
 - `MONGODB_URI`
 - `NEXTAUTH_SECRET`
 - `NEXTAUTH_URL`
+- `GEMINI_API_KEY` or `OPENAI_FALLBACK_ENABLED=true` with `OPENAI_API_KEY`
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
-- `SARVAM_API_KEY`
-- `SARVAM_BASE_URL`
-- `SARVAM_TARGET_LANGUAGE_CODE`
-- `SARVAM_TTS_SPEAKER`
+- `SARVAM_API_KEY` and related `SARVAM_*` values only if you want voice mode or Sarvam fallback support
 
 Suggested flow:
 

@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 const features = [
   {
     icon: FileScan,
+    title: "ATS resume analysis",
     description:
       "Upload PDF or DOCX resumes and get structured scoring, strengths, weak points, and suggested improvements.",
   },
@@ -32,7 +33,7 @@ const features = [
 export default function LandingPage() {
   return (
     <div className="hero-grid min-h-screen">
-      <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-6 lg:px-8">
+      <header className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between lg:px-8">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
             ResumeXpt
@@ -41,7 +42,7 @@ export default function LandingPage() {
             AI Resume Analyzer + Interview Coach
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <Button asChild variant="ghost">
             <Link href="/login">Login</Link>
           </Button>
@@ -51,16 +52,19 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 lg:px-8 lg:pt-14">
+      <main className="mx-auto max-w-7xl px-4 pb-16 pt-6 sm:pt-8 lg:px-8 lg:pt-14">
         <section className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <div>
-            <h1 className="max-w-4xl text-balance text-5xl font-bold leading-[1.05] tracking-tight text-foreground lg:text-7xl">
-              Turn every resume into a sharper application and every interview into practice that compounds.
+            <h1 className="max-w-4xl text-balance text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-7xl">
+              Turn every resume into a sharper application and every interview
+              into practice that compounds.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-              ResumeXpt helps candidates upload resumes, score them against ATS expectations, build custom interview sets, and rehearse with an AI interviewer in text or voice mode.
+              ResumeXpt helps candidates upload resumes, score them against ATS
+              expectations, build custom interview sets, and rehearse with an AI
+              interviewer in text or voice mode.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button asChild size="lg">
                 <Link href="/signup">
                   Create your workspace
@@ -107,7 +111,7 @@ export default function LandingPage() {
                 key={feature.title}
                 className={`animate-fade-in-up ${index === 1 ? "animation-delay-150" : ""} ${index >= 2 ? "animation-delay-300" : ""}`}
               >
-                <CardContent className="p-6">
+                <CardContent className="p-5 sm:p-6">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                   </div>

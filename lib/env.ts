@@ -5,6 +5,8 @@ const explicitGeminiApiKey = process.env.GEMINI_API_KEY?.trim();
 const fallbackGoogleApiKey = process.env.GOOGLE_API_KEY?.trim();
 const resolvedGeminiApiKey = explicitGeminiApiKey || fallbackGoogleApiKey;
 const resolvedOpenAIApiKey = process.env.OPENAI_API_KEY?.trim();
+const resolvedSarvamApiKey = process.env.SARVAM_API_KEY?.trim();
+const resolvedSarvamBaseUrl = process.env.SARVAM_BASE_URL?.trim();
 const resolvedAuthUrl = resolveAppUrl();
 const resolvedOpenAIFallbackEnabled =
   process.env.OPENAI_FALLBACK_ENABLED?.trim().toLowerCase() ?? "false";
@@ -22,8 +24,11 @@ const envSchema = z.object({
     .transform((value) => value === "true"),
   OPENAI_MODEL: z.string().min(1).default("gpt-4o-mini"),
   SARVAM_CHAT_MODEL: z.string().min(1).default("sarvam-m"),
-  SARVAM_API_KEY: z.string().min(1, "SARVAM_API_KEY is required"),
-  SARVAM_BASE_URL: z.string().url("SARVAM_BASE_URL must be a valid URL"),
+  SARVAM_API_KEY: z.string().min(1).optional(),
+  SARVAM_BASE_URL: z
+    .string()
+    .url("SARVAM_BASE_URL must be a valid URL")
+    .default("https://api.sarvam.ai"),
   SARVAM_TARGET_LANGUAGE_CODE: z.string().min(1).default("en-IN"),
   SARVAM_TTS_SPEAKER: z.string().min(1).default("simran"),
 });
@@ -38,8 +43,8 @@ const parsedEnv = envSchema.safeParse({
   OPENAI_FALLBACK_ENABLED: resolvedOpenAIFallbackEnabled,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
   SARVAM_CHAT_MODEL: process.env.SARVAM_CHAT_MODEL,
-  SARVAM_API_KEY: process.env.SARVAM_API_KEY,
-  SARVAM_BASE_URL: process.env.SARVAM_BASE_URL,
+  SARVAM_API_KEY: resolvedSarvamApiKey,
+  SARVAM_BASE_URL: resolvedSarvamBaseUrl || undefined,
   SARVAM_TARGET_LANGUAGE_CODE: process.env.SARVAM_TARGET_LANGUAGE_CODE,
   SARVAM_TTS_SPEAKER: process.env.SARVAM_TTS_SPEAKER,
 });
@@ -81,5 +86,11 @@ if (process.env.GOOGLE_API_KEY) {
 if (parsedEnv.data.OPENAI_API_KEY) {
   process.env.OPENAI_API_KEY = parsedEnv.data.OPENAI_API_KEY;
 }
+
+if (parsedEnv.data.SARVAM_API_KEY) {
+  process.env.SARVAM_API_KEY = parsedEnv.data.SARVAM_API_KEY;
+}
+
+process.env.SARVAM_BASE_URL = parsedEnv.data.SARVAM_BASE_URL;
 
 export const env = parsedEnv.data;

@@ -76,20 +76,26 @@ export function HistoryPanel({ resumes, sessions }: HistoryPanelProps) {
             resumes.map((resume) => (
               <div
                 key={resume._id}
-                className="flex items-center justify-between gap-4 rounded-[1.4rem] border border-border/60 bg-card/70 p-4"
+                className="flex flex-col gap-4 rounded-[1.4rem] border border-border/60 bg-card/70 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div>
-                  <p className="font-semibold">{resume.fileName}</p>
+                <div className="min-w-0">
+                  <p className="break-words font-semibold">{resume.fileName}</p>
                   <p className="text-sm text-muted-foreground">
-                    {resume.targetRole || "No role set"} • {resume.status} •{" "}
+                    {resume.targetRole || "No role set"} - {resume.status} -{" "}
                     {formatDate(resume.createdAt)}
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button asChild variant="outline" size="sm">
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                  <Button
+                    asChild
+                    className="w-full sm:w-auto"
+                    size="sm"
+                    variant="outline"
+                  >
                     <Link href={`/analysis/${resume._id}`}>View</Link>
                   </Button>
                   <Button
+                    className="w-full sm:w-auto"
                     variant="destructive"
                     size="sm"
                     onClick={() =>
@@ -124,9 +130,9 @@ export function HistoryPanel({ resumes, sessions }: HistoryPanelProps) {
             sessions.map((session) => (
               <div
                 key={session._id}
-                className="flex items-center justify-between gap-4 rounded-[1.4rem] border border-border/60 bg-card/70 p-4"
+                className="flex flex-col gap-4 rounded-[1.4rem] border border-border/60 bg-card/70 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold">
                     {session.status === "completed"
                       ? "Completed"
@@ -134,10 +140,11 @@ export function HistoryPanel({ resumes, sessions }: HistoryPanelProps) {
                     interview
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {session.mode} mode • {formatDate(session.createdAt)}
+                    {session.mode} mode - {formatDate(session.createdAt)}
                   </p>
                 </div>
                 <Button
+                  className="w-full sm:w-auto"
                   variant="destructive"
                   size="sm"
                   onClick={() =>
