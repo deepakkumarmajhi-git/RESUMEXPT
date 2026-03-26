@@ -97,6 +97,13 @@ function normalizeOpenAIError(
 }
 
 async function generateJsonContent(prompt: string, temperature: number) {
+  if (!env.OPENAI_API_KEY) {
+    throw new OpenAIServiceError(
+      "OpenAI is not configured. Set OPENAI_API_KEY and restart the server.",
+      503,
+    );
+  }
+
   const response = await fetch(OPENAI_API_URL, {
     method: "POST",
     headers: {
@@ -158,9 +165,9 @@ Return ONLY valid JSON with this exact shape:
   "summary": "short summary paragraph",
   "strengths": ["string"],
   "weaknesses": ["string"],
+  "missingSkills": ["string"],
   "suggestions": ["string"],
-  "keywordsMatched": ["string"],
-  "missingKeywords": ["string"]
+  "keywordsMatch": number between 0 and 100
 }
 
 Keep arrays concise but specific. Use evidence from the resume.
@@ -170,16 +177,41 @@ ${resumeText}
 `.trim();
 
   const responseText = await generateJsonContent(prompt, 0.4);
-
-  return parseJsonResponse<ResumeAnalysisResult>(responseText, {
+  const parsed = parseJsonResponse<Partial<ResumeAnalysisResult>>(responseText, {
     atsScore: 0,
     summary: "We could not parse the AI analysis result.",
     strengths: [],
     weaknesses: [],
+    missingSkills: [],
     suggestions: [],
+    keywordsMatch: 0,
     keywordsMatched: [],
     missingKeywords: [],
   });
+
+  const missingSkills = Array.isArray(parsed.missingSkills)
+    ? parsed.missingSkills
+    : Array.isArray(parsed.missingKeywords)
+      ? parsed.missingKeywords
+      : [];
+
+  return {
+    atsScore: typeof parsed.atsScore === "number" ? parsed.atsScore : 0,
+    summary:
+      typeof parsed.summary === "string" && parsed.summary.trim()
+        ? parsed.summary.trim()
+        : "We could not parse the AI analysis result.",
+    strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+    weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
+    missingSkills,
+    suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
+    keywordsMatch:
+      typeof parsed.keywordsMatch === "number" ? parsed.keywordsMatch : 0,
+    keywordsMatched: Array.isArray(parsed.keywordsMatched)
+      ? parsed.keywordsMatched
+      : [],
+    missingKeywords: missingSkills,
+  };
 }
 
 export async function generateInterviewQuestions(params: {
@@ -246,38 +278,70 @@ Conversation transcript: ${JSON.stringify(params.transcript)}
 
 Return ONLY valid JSON in this exact shape:
 {
-  "feedback": "2-4 sentence response that evaluates the candidate answer",
-  "nextQuestion": "next question string or empty string if complete",
-  "isComplete": boolean,
-  "finalReport": {
-    "overallScore": number between 0 and 100,
-    "summary": "short paragraph",
-    "highlights": ["string"],
-    "improvements": ["string"],
-    "recommendation": "short recommendation"
-  }
+  "type": "question" | "final_report",
+  "question": "next question string",
+  "overallScore": number between 0 and 100,
+  "communicationScore": number between 0 and 100,
+  "technicalScore": number between 0 and 100,
+  "strengths": ["string"],
+  "weaknesses": ["string"],
+  "suggestions": ["string"],
+  "summary": "short paragraph"
 }
 
 Rules:
-- If the interview should continue, set isComplete to false and finalReport to null.
-- If this was the final question, set isComplete to true and provide the finalReport.
-- The feedback must be constructive, specific, and concise.
+- If the interview should continue, set type to "question" and provide only the next question.
+- If this was the final question, set type to "final_report" and provide the final report fields.
+- Do not provide answer feedback during the interview.
+- Keep the tone concise and professional.
 `.trim();
 
   const responseText = await generateJsonContent(prompt, 0.45);
 
   const fallbackReport: InterviewFinalReport = {
     overallScore: 0,
+    communicationScore: 0,
+    technicalScore: 0,
     summary: "The final interview report could not be generated.",
-    highlights: [],
-    improvements: [],
-    recommendation: "Try running the mock interview again.",
+    strengths: [],
+    weaknesses: [],
+    suggestions: [],
   };
 
-  return parseJsonResponse<MockInterviewResponse>(responseText, {
-    feedback: "Thanks for the answer. I could not generate feedback this time.",
-    nextQuestion: finalQuestion ? "" : params.questions[params.questionIndex + 1] || "",
-    isComplete: finalQuestion,
-    finalReport: finalQuestion ? fallbackReport : undefined,
-  });
+  const parsed = parseJsonResponse<Record<string, unknown>>(responseText, {});
+
+  if (parsed.type === "final_report") {
+    return {
+      type: "final_report",
+      overallScore:
+        typeof parsed.overallScore === "number" ? parsed.overallScore : 0,
+      communicationScore:
+        typeof parsed.communicationScore === "number"
+          ? parsed.communicationScore
+          : 0,
+      technicalScore:
+        typeof parsed.technicalScore === "number" ? parsed.technicalScore : 0,
+      summary:
+        typeof parsed.summary === "string" ? parsed.summary : fallbackReport.summary,
+      strengths: Array.isArray(parsed.strengths)
+        ? (parsed.strengths.filter((item): item is string => typeof item === "string"))
+        : [],
+      weaknesses: Array.isArray(parsed.weaknesses)
+        ? (parsed.weaknesses.filter((item): item is string => typeof item === "string"))
+        : [],
+      suggestions: Array.isArray(parsed.suggestions)
+        ? (parsed.suggestions.filter((item): item is string => typeof item === "string"))
+        : [],
+    };
+  }
+
+  return {
+    type: "question",
+    question:
+      typeof parsed.question === "string"
+        ? parsed.question
+        : finalQuestion
+          ? ""
+          : params.questions[params.questionIndex + 1] || "",
+  };
 }

@@ -7,8 +7,8 @@ import { ResumeAnalysisModel } from "@/models/ResumeAnalysis";
 import { ResumeModel } from "@/models/Resume";
 import {
   generateInterviewQuestions,
-  OpenAIServiceError,
-} from "@/services/openai.service";
+  InterviewGenerationServiceError,
+} from "@/services/interview-generator.service";
 
 export const runtime = "nodejs";
 
@@ -57,16 +57,41 @@ export async function POST(request: Request) {
         ? ResumeAnalysisModel.findOne({
             _id: parsed.data.resumeAnalysisId,
             userId: user.id,
-          }).lean()
+          })
+            .select(
+              "targetRole summary strengths weaknesses missingSkills suggestions missingKeywords keywordsMatch",
+            )
+            .lean()
         : Promise.resolve(null),
     ]);
 
-    const questions = await generateInterviewQuestions({
+    if (parsed.data.resumeId && !resume) {
+      return errorResponse("Selected resume was not found.", 404);
+    }
+
+    if (parsed.data.resumeAnalysisId && !analysis) {
+      return errorResponse("Selected resume analysis was not found.", 404);
+    }
+
+    const result = await generateInterviewQuestions({
       role: parsed.data.role,
       experienceLevel: parsed.data.experienceLevel,
       difficulty: parsed.data.difficulty,
       resumeText: resume?.cleanedText,
-      analysisSummary: analysis?.summary,
+      analysis: analysis
+        ? {
+            targetRole: analysis.targetRole,
+            summary: analysis.summary,
+            strengths: analysis.strengths,
+            weaknesses: analysis.weaknesses,
+            missingSkills:
+              analysis.missingSkills?.length > 0
+                ? analysis.missingSkills
+                : analysis.missingKeywords,
+            suggestions: analysis.suggestions,
+            keywordsMatch: analysis.keywordsMatch,
+          }
+        : undefined,
     });
 
     const interviewSet = await InterviewSetModel.create({
@@ -76,19 +101,20 @@ export async function POST(request: Request) {
       role: parsed.data.role,
       experienceLevel: parsed.data.experienceLevel,
       difficulty: parsed.data.difficulty,
-      ...questions,
+      ...result.questions,
     });
 
     return successResponse(
       {
         id: interviewSet._id.toString(),
-        ...questions,
+        provider: result.provider,
+        ...result.questions,
       },
       { status: 201 },
     );
   } catch (error) {
     console.error("Interview generation failed", error);
-    if (error instanceof OpenAIServiceError) {
+    if (error instanceof InterviewGenerationServiceError) {
       return errorResponse(error.message, error.statusCode);
     }
     return errorResponse("Unable to generate interview questions.", 500);

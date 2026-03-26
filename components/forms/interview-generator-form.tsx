@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -24,6 +24,8 @@ type AnalysisOption = {
   id: string;
   label: string;
   resumeId: string;
+  targetRole: string;
+  resumeName: string;
 };
 
 type InterviewGeneratorFormProps = {
@@ -34,11 +36,26 @@ export function InterviewGeneratorForm({
   analyses,
 }: InterviewGeneratorFormProps) {
   const router = useRouter();
+  const initialAnalysisId = analyses[0]?.id ?? "";
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(analyses[0]?.targetRole ?? "");
   const [experienceLevel, setExperienceLevel] = useState("mid");
   const [difficulty, setDifficulty] = useState("medium");
-  const [selectedAnalysis, setSelectedAnalysis] = useState("");
+  const [selectedAnalysis, setSelectedAnalysis] = useState(initialAnalysisId);
+  const [lastAutoRole, setLastAutoRole] = useState(analyses[0]?.targetRole ?? "");
+
+  const selectedContext = analyses.find((item) => item.id === selectedAnalysis) ?? null;
+
+  useEffect(() => {
+    if (!selectedContext) {
+      return;
+    }
+
+    if (!role.trim() || role === lastAutoRole) {
+      setRole(selectedContext.targetRole);
+      setLastAutoRole(selectedContext.targetRole);
+    }
+  }, [selectedContext, role, lastAutoRole]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -89,11 +106,33 @@ export function InterviewGeneratorForm({
       <CardHeader>
         <CardTitle>Create an interview set</CardTitle>
         <CardDescription>
-          Generate technical, HR, and coding questions aligned to your role and experience level.
+          Generate technical, HR, and coding questions aligned to your role, experience level, and analyzed resume.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="analysis">Use analyzed resume context</Label>
+            <select
+              id="analysis"
+              className="flex h-11 w-full rounded-2xl border border-input bg-card/80 px-4 text-sm"
+              value={selectedAnalysis}
+              onChange={(event) => setSelectedAnalysis(event.target.value)}
+            >
+              <option value="">No resume context</option>
+              {analyses.map((analysis) => (
+                <option key={analysis.id} value={analysis.id}>
+                  {analysis.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs leading-6 text-muted-foreground">
+              {selectedContext
+                ? `Questions will be personalized using ${selectedContext.resumeName} and its saved analysis.`
+                : "Select a saved analysis to personalize the interview set to your resume."}
+            </p>
+          </div>
+
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="role">Role</Label>
             <Input
@@ -130,23 +169,6 @@ export function InterviewGeneratorForm({
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
               <option value="hard">Hard</option>
-            </select>
-          </div>
-
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="analysis">Base it on a previous analysis</Label>
-            <select
-              id="analysis"
-              className="flex h-11 w-full rounded-2xl border border-input bg-card/80 px-4 text-sm"
-              value={selectedAnalysis}
-              onChange={(event) => setSelectedAnalysis(event.target.value)}
-            >
-              <option value="">No resume context</option>
-              {analyses.map((analysis) => (
-                <option key={analysis.id} value={analysis.id}>
-                  {analysis.label}
-                </option>
-              ))}
             </select>
           </div>
 

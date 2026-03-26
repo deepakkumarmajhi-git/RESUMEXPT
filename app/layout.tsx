@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | AI Resume Analyzer",
   },
   description:
-    "Upload your resume, get ATS-ready feedback, generate interview sets, and practice with an AI interview coach in text or voice mode.",
+    "Upload your resume, get ATS-ready analysis, generate interview sets, and practice with an AI interviewer in text or voice mode.",
 };
 
 export default function RootLayout({

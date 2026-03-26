@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 export function useVoiceInterview() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -20,6 +21,7 @@ export function useVoiceInterview() {
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const recorder = new MediaRecorder(stream);
+    streamRef.current = stream;
     chunksRef.current = [];
     mediaRecorderRef.current = recorder;
 
@@ -37,7 +39,8 @@ export function useVoiceInterview() {
         if (current) URL.revokeObjectURL(current);
         return nextUrl;
       });
-      stream.getTracks().forEach((track) => track.stop());
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     };
 
     recorder.start();
@@ -58,6 +61,8 @@ export function useVoiceInterview() {
           if (current) URL.revokeObjectURL(current);
           return nextUrl;
         });
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
         resolve(blob);
       };
     });
@@ -79,6 +84,8 @@ export function useVoiceInterview() {
         if (current) URL.revokeObjectURL(current);
         return null;
       });
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     },
   };
 }

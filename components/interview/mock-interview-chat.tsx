@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import {
   Loader2,
   Mic,
@@ -9,6 +9,7 @@ import {
   PlayCircle,
   Send,
   Sparkles,
+  Volume2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useVoiceInterview } from "@/hooks/use-voice-interview";
@@ -32,7 +33,6 @@ import type { InterviewFinalReport } from "@/types/interview";
 type TranscriptEntry = {
   role: "assistant" | "user" | "system";
   content: string;
-  feedback?: string;
   createdAt?: string;
 };
 
@@ -55,6 +55,7 @@ export function MockInterviewChat({
 }: MockInterviewChatProps) {
   const router = useRouter();
   const voice = useVoiceInterview();
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
   const [sessionId, setSessionId] = useState(initialSession?.id ?? "");
   const [transcript, setTranscript] = useState<TranscriptEntry[]>(
     initialSession?.transcript ?? [],
@@ -66,6 +67,44 @@ export function MockInterviewChat({
   const [finalReport, setFinalReport] = useState<InterviewFinalReport | null>(
     initialSession?.finalReport ?? null,
   );
+
+  const latestAssistantMessage = useMemo(
+    () =>
+      transcript
+        .slice()
+        .reverse()
+        .find((entry) => entry.role === "assistant")?.content ?? "",
+    [transcript],
+  );
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [transcript, isSending, isStarting]);
+
+  const speak = async (text: string) => {
+    if (!text.trim()) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/voice/tts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+      const result = await readApiPayload<{ audioUrl: string }>(response);
+      if (!response.ok || !hasApiData(result.payload)) {
+        return;
+      }
+
+      const audio = new Audio(result.payload.data.audioUrl);
+      await audio.play();
+    } catch (error) {
+      console.error("TTS playback failed", error);
+    }
+  };
 
   const startSession = async (mode: "text" | "voice") => {
     setIsStarting(true);
@@ -105,7 +144,11 @@ export function MockInterviewChat({
         },
       ]);
       setFinalReport(null);
+      setMessage("");
       setVoiceMode(mode === "voice");
+      if (mode === "voice") {
+        void speak(result.payload.data.openingQuestion);
+      }
       router.refresh();
     } catch (error) {
       toast.error(
@@ -116,28 +159,14 @@ export function MockInterviewChat({
     }
   };
 
-  const speak = async (text: string) => {
-    try {
-      const response = await fetch("/api/voice/tts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text }),
-      });
-      const result = await readApiPayload<{ audioUrl: string }>(response);
-      if (!response.ok || !hasApiData(result.payload)) return;
-
-      const audio = new Audio(result.payload.data.audioUrl);
-      await audio.play();
-    } catch (error) {
-      console.error("TTS playback failed", error);
-    }
-  };
-
   const sendMessage = async (content: string) => {
     if (!sessionId) {
       toast.error("Start a mock interview first.");
+      return;
+    }
+
+    if (finalReport) {
+      toast.error("This interview is already complete. Restart to try again.");
       return;
     }
 
@@ -156,7 +185,7 @@ export function MockInterviewChat({
       );
 
       const result = await readApiPayload<{
-        reply: string;
+        assistantMessage: string;
         finalReport: InterviewFinalReport | null;
         session: {
           transcript: TranscriptEntry[];
@@ -177,8 +206,8 @@ export function MockInterviewChat({
       setFinalReport(result.payload.data.finalReport ?? null);
       setMessage("");
 
-      if (voiceMode && result.payload.data.reply) {
-        void speak(result.payload.data.reply);
+      if (voiceMode && result.payload.data.assistantMessage) {
+        void speak(result.payload.data.assistantMessage);
       }
 
       router.refresh();
@@ -192,8 +221,12 @@ export function MockInterviewChat({
   };
 
   const submitTextAnswer = async () => {
-    if (!message.trim()) return;
-    await sendMessage(message.trim());
+    const trimmed = message.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    await sendMessage(trimmed);
   };
 
   const handleVoiceSubmit = async () => {
@@ -204,7 +237,9 @@ export function MockInterviewChat({
       }
 
       const blob = await voice.stopRecording();
-      if (!blob) return;
+      if (!blob) {
+        return;
+      }
 
       const formData = new FormData();
       formData.append("file", new File([blob], "answer.webm", { type: blob.type }));
@@ -226,7 +261,6 @@ export function MockInterviewChat({
         );
       }
 
-      toast.success("Audio transcribed successfully.");
       await sendMessage(result.payload.data.transcript);
       voice.clear();
     } catch (error) {
@@ -240,10 +274,10 @@ export function MockInterviewChat({
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <CardTitle>Mock interview coach</CardTitle>
+              <CardTitle>Mock interview</CardTitle>
               <CardDescription>
-                Practice answers for the {role} role with AI feedback after every
-                response.
+                Practice the {role} role with an AI interviewer. It asks one question
+                at a time and saves evaluation for the final report only.
               </CardDescription>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -253,7 +287,7 @@ export function MockInterviewChat({
               <Button
                 variant="outline"
                 onClick={() => startSession(voiceMode ? "voice" : "text")}
-                disabled={isStarting}
+                disabled={isStarting || isSending}
               >
                 {isStarting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -265,6 +299,7 @@ export function MockInterviewChat({
               <Button
                 variant={voiceMode ? "secondary" : "outline"}
                 onClick={() => setVoiceMode((current) => !current)}
+                disabled={isStarting || isSending}
               >
                 {voiceMode ? (
                   <Mic className="h-4 w-4" />
@@ -272,6 +307,14 @@ export function MockInterviewChat({
                   <MicOff className="h-4 w-4" />
                 )}
                 Toggle voice
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => void speak(latestAssistantMessage)}
+                disabled={!latestAssistantMessage}
+              >
+                <Volume2 className="h-4 w-4" />
+                Replay question
               </Button>
             </div>
           </div>
@@ -293,10 +336,19 @@ export function MockInterviewChat({
               ))
             ) : (
               <div className="rounded-[1.6rem] border border-dashed border-border p-6 text-sm text-muted-foreground">
-                Start a session to let the AI interviewer ask the opening
-                question.
+                Start a session to let the AI interviewer ask the opening question.
               </div>
             )}
+
+            {(isStarting || isSending) && !finalReport ? (
+              <div className="max-w-[88%] rounded-[1.6rem] bg-secondary px-4 py-3 text-sm text-secondary-foreground">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>AI thinking...</span>
+                </div>
+              </div>
+            ) : null}
+            <div ref={chatEndRef} />
           </div>
 
           <div className="mt-6 space-y-3">
@@ -304,11 +356,11 @@ export function MockInterviewChat({
               value={message}
               onChange={(event) => setMessage(event.target.value)}
               placeholder="Type your answer here..."
-              disabled={voiceMode || isSending}
+              disabled={voiceMode || isSending || Boolean(finalReport)}
             />
             <div className="flex flex-wrap gap-3">
               <Button
-                disabled={voiceMode || isSending}
+                disabled={voiceMode || isSending || Boolean(finalReport)}
                 onClick={submitTextAnswer}
                 type="button"
               >
@@ -323,7 +375,7 @@ export function MockInterviewChat({
                 type="button"
                 variant={voice.isRecording ? "destructive" : "secondary"}
                 onClick={handleVoiceSubmit}
-                disabled={!voiceMode || isSending}
+                disabled={!voiceMode || isSending || Boolean(finalReport)}
               >
                 {voice.isRecording ? (
                   <MicOff className="h-4 w-4" />
@@ -341,48 +393,76 @@ export function MockInterviewChat({
         <CardHeader>
           <CardTitle>Final report</CardTitle>
           <CardDescription>
-            Your interview summary appears here when the mock session is complete.
+            A full evaluation is generated only after the interview is complete.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {finalReport ? (
             <>
-              <div className="rounded-[1.4rem] bg-primary/10 p-4">
-                <p className="text-sm font-semibold text-primary">Overall score</p>
-                <p className="mt-2 text-4xl font-bold">
-                  {finalReport.overallScore}/100
-                </p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[1.4rem] bg-primary/10 p-4">
+                  <p className="text-sm font-semibold text-primary">Overall</p>
+                  <p className="mt-2 text-3xl font-bold">{finalReport.overallScore}</p>
+                </div>
+                <div className="rounded-[1.4rem] bg-secondary/50 p-4">
+                  <p className="text-sm font-semibold">Communication</p>
+                  <p className="mt-2 text-3xl font-bold">
+                    {finalReport.communicationScore}
+                  </p>
+                </div>
+                <div className="rounded-[1.4rem] bg-secondary/50 p-4">
+                  <p className="text-sm font-semibold">Technical</p>
+                  <p className="mt-2 text-3xl font-bold">
+                    {finalReport.technicalScore}
+                  </p>
+                </div>
               </div>
+
               <p className="text-sm leading-7 text-muted-foreground">
                 {finalReport.summary}
               </p>
+
               <div>
-                <p className="text-sm font-semibold">Highlights</p>
-                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
-                  {finalReport.highlights.map((item) => (
-                    <li key={item}>• {item}</li>
+                <p className="text-sm font-semibold">Strengths</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {finalReport.strengths.map((item) => (
+                    <Badge key={item} variant="success">
+                      {item}
+                    </Badge>
                   ))}
-                </ul>
+                </div>
               </div>
+
               <div>
-                <p className="text-sm font-semibold">Improve next</p>
-                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
-                  {finalReport.improvements.map((item) => (
-                    <li key={item}>• {item}</li>
+                <p className="text-sm font-semibold">Weaknesses</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {finalReport.weaknesses.map((item) => (
+                    <Badge key={item} variant="destructive">
+                      {item}
+                    </Badge>
                   ))}
-                </ul>
+                </div>
               </div>
-              <div className="rounded-[1.4rem] border border-border/60 bg-card/60 p-4 text-sm">
-                <p className="font-semibold">Recommendation</p>
-                <p className="mt-2 text-muted-foreground">
-                  {finalReport.recommendation}
-                </p>
+
+              <div>
+                <p className="text-sm font-semibold">Suggestions</p>
+                <div className="mt-3 grid gap-3">
+                  {finalReport.suggestions.map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-[1.35rem] border border-border/70 bg-secondary/35 p-4 text-sm leading-7 text-foreground/85"
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
               </div>
             </>
           ) : (
             <div className="rounded-[1.4rem] border border-dashed border-border p-6 text-sm text-muted-foreground">
-              Complete a mock interview and the AI coach will generate a summary
-              report with strengths, improvement areas, and a recommendation.
+              Complete the mock interview to generate a final evaluation with
+              communication, technical scoring, strengths, weaknesses, and next
+              steps.
             </div>
           )}
 
@@ -392,8 +472,8 @@ export function MockInterviewChat({
               Voice interview mode
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Turn on voice mode to record spoken answers, transcribe them with
-              Sarvam AI, and optionally listen to AI feedback aloud.
+              Record spoken answers, convert them to text with Sarvam STT, and
+              hear each AI interview question with Sarvam TTS.
             </p>
           </div>
         </CardContent>

@@ -38,9 +38,19 @@ const resumeAnalysisSchema = new Schema(
       type: [String],
       default: [],
     },
+    missingSkills: {
+      type: [String],
+      default: [],
+    },
     suggestions: {
       type: [String],
       default: [],
+    },
+    keywordsMatch: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
     },
     keywordsMatched: {
       type: [String],

@@ -4,7 +4,10 @@ import { connectToDatabase } from "@/lib/db";
 import { resumeAnalysisSchema } from "@/lib/validations";
 import { ResumeAnalysisModel } from "@/models/ResumeAnalysis";
 import { ResumeModel } from "@/models/Resume";
-import { analyzeResume, OpenAIServiceError } from "@/services/openai.service";
+import {
+  analyzeResume,
+  ResumeAnalysisServiceError,
+} from "@/services/resume-analysis.service";
 
 export const runtime = "nodejs";
 
@@ -31,34 +34,37 @@ export async function POST(
       return errorResponse("Resume not found.", 404);
     }
 
-    const analysisResult = await analyzeResume(
+    const result = await analyzeResume(
       resume.cleanedText,
       parsed.data.targetRole,
     );
 
-    const analysis = await ResumeAnalysisModel.create({
+    const analysisRecord = await ResumeAnalysisModel.create({
       userId: user.id,
       resumeId: resume._id,
       targetRole: parsed.data.targetRole,
-      ...analysisResult,
-      rawResponse: analysisResult,
+      ...result.analysis,
+      rawResponse: {
+        provider: result.provider,
+        response: result.rawResponse,
+      },
     });
 
     resume.targetRole = parsed.data.targetRole;
     resume.status = "analyzed";
-    resume.latestAnalysisId = analysis._id;
+    resume.latestAnalysisId = analysisRecord._id;
     await resume.save();
 
     return successResponse(
       {
-        id: analysis._id.toString(),
-        ...analysisResult,
+        id: analysisRecord._id.toString(),
+        ...result.analysis,
       },
       { status: 201 },
     );
   } catch (error) {
     console.error("Resume analysis failed", error);
-    if (error instanceof OpenAIServiceError) {
+    if (error instanceof ResumeAnalysisServiceError) {
       return errorResponse(error.message, error.statusCode);
     }
     return errorResponse("Unable to analyze the resume right now.", 500);

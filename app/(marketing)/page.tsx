@@ -19,13 +19,13 @@ const features = [
     icon: Brain,
     title: "AI mock interview coach",
     description:
-      "Practice answer-by-answer with contextual feedback and a final coaching report.",
+      "Practice with an AI interviewer that asks one question at a time and generates a final performance report at the end.",
   },
   {
     icon: Mic,
     title: "Voice interview mode",
     description:
-      "Speak your answers, transcribe them with Sarvam AI, and listen to spoken AI feedback.",
+      "Speak your answers, transcribe them with Sarvam AI, and listen to each AI interview question with spoken playback.",
   },
 ];
 

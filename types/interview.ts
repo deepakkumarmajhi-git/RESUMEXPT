@@ -7,15 +7,23 @@ export interface InterviewQuestionSetResult {
 
 export interface InterviewFinalReport {
   overallScore: number;
+  communicationScore: number;
+  technicalScore: number;
   summary: string;
-  highlights: string[];
-  improvements: string[];
-  recommendation: string;
+  strengths: string[];
+  weaknesses: string[];
+  suggestions: string[];
 }
 
-export interface MockInterviewResponse {
-  feedback: string;
-  nextQuestion: string;
-  isComplete: boolean;
-  finalReport?: InterviewFinalReport;
+export interface MockInterviewQuestionResult {
+  type: "question";
+  question: string;
 }
+
+export interface MockInterviewFinalReportResult extends InterviewFinalReport {
+  type: "final_report";
+}
+
+export type MockInterviewResponse =
+  | MockInterviewQuestionResult
+  | MockInterviewFinalReportResult;

@@ -12,10 +12,25 @@ const transcriptEntrySchema = new Schema(
       required: true,
       trim: true,
     },
-    feedback: {
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false },
+);
+
+const answerEntrySchema = new Schema(
+  {
+    question: {
       type: String,
+      required: true,
       trim: true,
-      default: "",
+    },
+    answer: {
+      type: String,
+      required: true,
+      trim: true,
     },
     createdAt: {
       type: Date,
@@ -31,23 +46,30 @@ const finalReportSchema = new Schema(
       type: Number,
       default: 0,
     },
+    communicationScore: {
+      type: Number,
+      default: 0,
+    },
+    technicalScore: {
+      type: Number,
+      default: 0,
+    },
     summary: {
       type: String,
       trim: true,
       default: "",
     },
-    highlights: {
+    strengths: {
       type: [String],
       default: [],
     },
-    improvements: {
+    weaknesses: {
       type: [String],
       default: [],
     },
-    recommendation: {
-      type: String,
-      trim: true,
-      default: "",
+    suggestions: {
+      type: [String],
+      default: [],
     },
   },
   { _id: false },
@@ -86,12 +108,20 @@ const interviewSessionSchema = new Schema(
       type: Number,
       default: 0,
     },
+    questionTargetCount: {
+      type: Number,
+      default: 6,
+    },
     score: {
       type: Number,
       default: 0,
     },
     transcript: {
       type: [transcriptEntrySchema],
+      default: [],
+    },
+    answers: {
+      type: [answerEntrySchema],
       default: [],
     },
     finalReport: {

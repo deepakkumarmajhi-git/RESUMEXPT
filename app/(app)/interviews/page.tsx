@@ -40,7 +40,9 @@ export default async function InterviewsPage() {
     return {
       id: analysis._id.toString(),
       resumeId: analysis.resumeId.toString(),
-      label: `${analysis.targetRole} • ${resume?.fileName ?? "Resume"}`,
+      targetRole: analysis.targetRole,
+      resumeName: resume?.fileName ?? "Resume",
+      label: `${analysis.targetRole} - ${resume?.fileName ?? "Resume"}`,
     };
   });
 
@@ -81,7 +83,7 @@ export default async function InterviewsPage() {
                   <Badge variant="outline">{set.difficulty}</Badge>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {set.technicalQuestions.length} technical • {set.hrQuestions.length} HR • {set.codingQuestions.length} coding
+                  {set.technicalQuestions.length} technical - {set.hrQuestions.length} HR - {set.codingQuestions.length} coding
                 </p>
               </Link>
             ))

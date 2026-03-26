@@ -35,27 +35,33 @@ export default async function InterviewDetailPage({
     .lean();
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="flex flex-col gap-6 lg:h-[calc(100vh-5.5rem)]">
+      <div className="shrink-0">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
             Interview set
           </p>
           <Badge variant="secondary">{interviewSet.experienceLevel}</Badge>
           <Badge variant="outline">{interviewSet.difficulty}</Badge>
+          <Badge variant="warning">
+            {interviewSet.technicalQuestions.length +
+              interviewSet.hrQuestions.length +
+              interviewSet.codingQuestions.length}{" "}
+            seed prompts
+          </Badge>
         </div>
         <h1 className="mt-3 text-4xl font-bold tracking-tight">
           {interviewSet.role}
         </h1>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
+      <div className="grid flex-1 min-h-0 gap-6 xl:grid-cols-[0.75fr_1.25fr]">
+        <div className="grid min-h-0 gap-4 lg:grid-cols-3 xl:grid-cols-1 xl:grid-rows-[1fr_1fr_1fr]">
+          <Card className="min-h-0">
+            <CardHeader className="pb-4">
               <CardTitle>Technical questions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-7 text-muted-foreground">
+            <CardContent className="hide-scrollbar min-h-0 max-h-[18rem] space-y-3 overflow-y-auto text-sm leading-7 text-muted-foreground xl:max-h-none">
               {interviewSet.technicalQuestions.map((item: string, index: number) => (
                 <p key={item}>
                   {index + 1}. {item}
@@ -64,11 +70,11 @@ export default async function InterviewDetailPage({
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
+          <Card className="min-h-0">
+            <CardHeader className="pb-4">
               <CardTitle>HR questions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-7 text-muted-foreground">
+            <CardContent className="hide-scrollbar min-h-0 max-h-[18rem] space-y-3 overflow-y-auto text-sm leading-7 text-muted-foreground xl:max-h-none">
               {interviewSet.hrQuestions.map((item: string, index: number) => (
                 <p key={item}>
                   {index + 1}. {item}
@@ -77,11 +83,11 @@ export default async function InterviewDetailPage({
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
+          <Card className="min-h-0">
+            <CardHeader className="pb-4">
               <CardTitle>Coding questions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-7 text-muted-foreground">
+            <CardContent className="hide-scrollbar min-h-0 max-h-[18rem] space-y-3 overflow-y-auto text-sm leading-7 text-muted-foreground xl:max-h-none">
               {interviewSet.codingQuestions.map((item: string, index: number) => (
                 <p key={item}>
                   {index + 1}. {item}
@@ -91,31 +97,31 @@ export default async function InterviewDetailPage({
           </Card>
         </div>
 
-        <MockInterviewChat
-          interviewSetId={interviewSet._id.toString()}
-          role={interviewSet.role}
-          initialSession={
-            latestSession
-              ? {
-                  id: latestSession._id.toString(),
-                  mode: latestSession.mode,
-                  status: latestSession.status,
-                  transcript: latestSession.transcript.map((entry: {
-                    role: "assistant" | "user" | "system";
-                    content: string;
-                    feedback?: string;
-                    createdAt?: Date;
-                  }) => ({
-                    role: entry.role,
-                    content: entry.content,
-                    feedback: entry.feedback,
-                    createdAt: entry.createdAt?.toString(),
-                  })),
-                  finalReport: latestSession.finalReport,
-                }
-              : null
-          }
-        />
+        <div className="min-h-0">
+          <MockInterviewChat
+            interviewSetId={interviewSet._id.toString()}
+            role={interviewSet.role}
+            initialSession={
+              latestSession
+                ? {
+                    id: latestSession._id.toString(),
+                    mode: latestSession.mode,
+                    status: latestSession.status,
+                    transcript: latestSession.transcript.map((entry: {
+                      role: "assistant" | "user" | "system";
+                      content: string;
+                      createdAt?: Date;
+                    }) => ({
+                      role: entry.role,
+                      content: entry.content,
+                      createdAt: entry.createdAt?.toString(),
+                    })),
+                    finalReport: latestSession.finalReport,
+                  }
+                : null
+            }
+          />
+        </div>
       </div>
     </div>
   );

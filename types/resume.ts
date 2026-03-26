@@ -3,7 +3,9 @@ export interface ResumeAnalysisResult {
   summary: string;
   strengths: string[];
   weaknesses: string[];
+  missingSkills: string[];
   suggestions: string[];
+  keywordsMatch: number;
   keywordsMatched: string[];
   missingKeywords: string[];
 }

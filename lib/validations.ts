@@ -30,6 +30,11 @@ export const resumeAnalysisSchema = z.object({
   targetRole: z.string().trim().min(2).max(120),
 });
 
+export const resumeTextAnalysisSchema = z.object({
+  resumeText: z.string().trim().min(1).max(100_000),
+  jobRole: z.string().trim().min(2).max(120),
+});
+
 export const interviewGeneratorSchema = z.object({
   resumeId: z.string().optional(),
   resumeAnalysisId: z.string().optional(),
