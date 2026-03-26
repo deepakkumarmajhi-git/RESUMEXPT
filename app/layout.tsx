@@ -7,11 +7,16 @@ export const metadata: Metadata = {
     process.env.NEXTAUTH_URL ?? process.env.AUTH_URL ?? "http://localhost:3000",
   ),
   title: {
-    default: "AI Resume Analyzer + Interview Coach",
-    template: "%s | AI Resume Analyzer",
+    default: "ResumeXpt | AI Resume Analyzer & Interview Coach",
+    template: "%s | ResumeXpt",
   },
   description:
     "Upload your resume, get ATS-ready analysis, generate interview sets, and practice with an AI interviewer in text or voice mode.",
+  icons: {
+    icon: "/resumexpt-tab-icon.svg",
+    shortcut: "/resumexpt-tab-icon.svg",
+    apple: "/resumexpt-tab-icon.svg",
+  },
 };
 
 export default function RootLayout({
