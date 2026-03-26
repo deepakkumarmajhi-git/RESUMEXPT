@@ -4,6 +4,7 @@ import { voiceSynthesisSchema } from "@/lib/validations";
 import { synthesizeSpeech } from "@/services/sarvam.service";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {

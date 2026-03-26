@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { resolveAppUrl } from "@/lib/app-url";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXTAUTH_URL ?? process.env.AUTH_URL ?? "http://localhost:3000",
-  ),
+  metadataBase: new URL(resolveAppUrl()),
   title: {
     default: "ResumeXpt | AI Resume Analyzer & Interview Coach",
     template: "%s | ResumeXpt",
@@ -33,6 +33,7 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-background text-foreground">
         <Providers>{children}</Providers>
+        <SpeedInsights />
       </body>
     </html>
   );

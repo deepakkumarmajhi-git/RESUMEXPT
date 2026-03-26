@@ -7,6 +7,7 @@ import { extractResumeText } from "@/services/resume-parser.service";
 import { MAX_STORED_RESUME_TEXT_BYTES, validateResumeFile } from "@/utils/file";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function collectErrorMessages(error: unknown, messages = new Set<string>()) {
   if (error instanceof Error) {

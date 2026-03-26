@@ -11,6 +11,7 @@ import {
 } from "@/services/interview-generator.service";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function GET() {
   try {

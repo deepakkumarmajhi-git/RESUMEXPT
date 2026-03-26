@@ -1,9 +1,11 @@
 import { z } from "zod";
+import { resolveAppUrl } from "@/lib/app-url";
 
 const explicitGeminiApiKey = process.env.GEMINI_API_KEY?.trim();
 const fallbackGoogleApiKey = process.env.GOOGLE_API_KEY?.trim();
 const resolvedGeminiApiKey = explicitGeminiApiKey || fallbackGoogleApiKey;
 const resolvedOpenAIApiKey = process.env.OPENAI_API_KEY?.trim();
+const resolvedAuthUrl = resolveAppUrl();
 const resolvedOpenAIFallbackEnabled =
   process.env.OPENAI_FALLBACK_ENABLED?.trim().toLowerCase() ?? "false";
 
@@ -29,7 +31,7 @@ const envSchema = z.object({
 const parsedEnv = envSchema.safeParse({
   MONGODB_URI: process.env.MONGODB_URI,
   AUTH_SECRET: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
-  AUTH_URL: process.env.NEXTAUTH_URL ?? process.env.AUTH_URL,
+  AUTH_URL: resolvedAuthUrl,
   GEMINI_API_KEY: resolvedGeminiApiKey,
   GEMINI_MODEL: process.env.GEMINI_MODEL,
   OPENAI_API_KEY: resolvedOpenAIApiKey,
