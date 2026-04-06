@@ -1,5 +1,8 @@
 import { errorResponse, successResponse } from "@/lib/api";
-import { requireUserSession } from "@/lib/auth/session";
+import {
+  isUnauthorizedSessionError,
+  requireUserSession,
+} from "@/lib/auth/session";
 import { connectToDatabase } from "@/lib/db";
 import { resumeAnalysisSchema } from "@/lib/validations";
 import { ResumeAnalysisModel } from "@/models/ResumeAnalysis";
@@ -65,6 +68,11 @@ export async function POST(
     );
   } catch (error) {
     console.error("Resume analysis failed", error);
+
+    if (isUnauthorizedSessionError(error)) {
+      return errorResponse("Please sign in again before analyzing a resume.", 401);
+    }
+
     if (error instanceof ResumeAnalysisServiceError) {
       return errorResponse(error.message, error.statusCode);
     }

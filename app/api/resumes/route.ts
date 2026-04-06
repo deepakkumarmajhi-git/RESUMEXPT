@@ -1,5 +1,8 @@
 import { errorResponse, successResponse } from "@/lib/api";
-import { requireUserSession } from "@/lib/auth/session";
+import {
+  isUnauthorizedSessionError,
+  requireUserSession,
+} from "@/lib/auth/session";
 import { connectToDatabase } from "@/lib/db";
 import { resumeUploadSchema } from "@/lib/validations";
 import { ResumeModel } from "@/models/Resume";
@@ -36,6 +39,11 @@ export async function GET() {
     return successResponse(resumes);
   } catch (error) {
     console.error("Failed to list resumes", error);
+
+    if (isUnauthorizedSessionError(error)) {
+      return errorResponse("Please sign in again to view your resumes.", 401);
+    }
+
     return errorResponse("Unable to load resumes.", 500);
   }
 }
@@ -101,6 +109,11 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("Resume upload failed", error);
+
+    if (isUnauthorizedSessionError(error)) {
+      return errorResponse("Please sign in again before uploading a resume.", 401);
+    }
+
     const errorMessages = collectErrorMessages(error).join(" ");
 
     if (/ENOSPC|os error 112|not enough space on the disk/i.test(errorMessages)) {

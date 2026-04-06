@@ -83,6 +83,18 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        if (typeof user.id === "string" && user.id) {
+          token.sub = user.id;
+        }
+
+        if (typeof user.email === "string" && user.email) {
+          token.email = user.email;
+        }
+
+        if (typeof user.name === "string" && user.name) {
+          token.name = user.name;
+        }
+
         token.role = user.role;
         token.targetRole = user.targetRole;
       }
@@ -90,8 +102,19 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub;
+      if (session.user) {
+        if (token.sub) {
+          session.user.id = token.sub;
+        }
+
+        if (!session.user.email && typeof token.email === "string") {
+          session.user.email = token.email;
+        }
+
+        if (!session.user.name && typeof token.name === "string") {
+          session.user.name = token.name;
+        }
+
         session.user.role = token.role;
         session.user.targetRole =
           typeof token.targetRole === "string" ? token.targetRole : "";
