@@ -79,6 +79,15 @@ export function getApiErrorMessage(
 
   const normalizedText = normalizeResponseText(rawText);
 
+  if (
+    response.status === 413 ||
+    /FUNCTION_PAYLOAD_TOO_LARGE|payload too large|body size limit/i.test(
+      normalizedText,
+    )
+  ) {
+    return "This resume is too large for deployment uploads. Please keep it under 4MB and try again.";
+  }
+
   if (/ENOSPC|os error 112|not enough space on the disk/i.test(normalizedText)) {
     return "The server is out of local disk space, so the request could not be completed.";
   }
