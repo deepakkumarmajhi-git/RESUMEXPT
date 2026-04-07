@@ -130,17 +130,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (
-      /DOMMatrix|ImageData|Path2D|@napi-rs\/canvas|native binding/i.test(
-        errorMessages,
-      )
-    ) {
-      return errorResponse(
-        "PDF processing is not available in this deployment yet. Redeploy on Node 22 and try again.",
-        503,
-      );
-    }
-
     return errorResponse("Unable to upload the resume right now.", 500);
   }
 }

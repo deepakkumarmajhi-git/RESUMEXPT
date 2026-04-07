@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pdf-parse", "mammoth", "@napi-rs/canvas"],
+  serverExternalPackages: ["pdf-parse", "mammoth"],
   experimental: {
     turbopackFileSystemCacheForDev: false,
   },

@@ -1,6 +1,4 @@
-// Keep uploads safely below Vercel's 4.5 MB function request limit,
-// allowing room for multipart form-data overhead.
-export const MAX_RESUME_FILE_SIZE = 4 * 1024 * 1024;
+export const MAX_RESUME_FILE_SIZE = 5 * 1024 * 1024;
 export const MAX_STORED_RESUME_TEXT_BYTES = 8 * 1024 * 1024;
 export const ALLOWED_RESUME_TYPES = [
   "application/pdf",
